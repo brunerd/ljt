@@ -13,7 +13,7 @@ An empty query will output the entire JSON document with the default 2 spaces pe
 
 A file argument can be any valid file path. Additionally file redirection, here docs and here texts are accepted, as well as input via pipe (via cat).
 
-Usage: `jpt [query] [fileArg]`
+Usage: `ljt [query] [fileArg]`
 ```
 % ljt /obj/0 <<< '{"obj":["string",42,true]}'
 string
@@ -23,4 +23,23 @@ string
 
 % ljt '$["obj"][2]' <<< '{"obj":["string",42,true]}'
 true
+
+% ljt <<< '{"obj":["string",42,true]}'                                                                               
+{
+  "obj": [
+    "string",
+    42,
+    true
+  ]
+}
+
+% ljt /obj <<< '{"obj":["string",42,true]}'
+[
+  "string",
+  42,
+  true
+]
+
+% ljt /obj <<< '{"obj":["string",42,true]}' | ljt '/0'  
+string
 ```
