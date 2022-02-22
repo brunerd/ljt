@@ -1,29 +1,31 @@
-# ljt
-Little JSON Tool a smaller compliment to [jpt](https://github.com/brunerd/jpt) the JSON Power Tool
+# ljt - Little JSON Tool 
 
-Extract values from JSON in your shell script (bash or zsh) using either [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) or canonical [JSONPath](https://datatracker.ietf.org/doc/draft-ietf-jsonpath-base/).
+`ljt` can quickly extract values from JSON data, it can be used standalone or embedded into _your_ shell scripts and only requires `jsc` the [JavaScriptCore](https://trac.webkit.org/wiki/JavaScriptCore) binary which is standard on every Mac and available on many \*nix distributions. 
 
-JSONPath with or without a leading $ is allowed. Canonical JSONPath means no filters, negative indexes, unions, or recursive search, etc... basically JavaScript syntax.
+Usage: `ljt [query] [filepath]`
 
-String values are output in their native encoding (not JSON double quoted), all other values are output as JSON (arrays, objects, booleans, numbers and null)
+`[query]` is optional and may be either [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) or [JSONPath](https://datatracker.ietf.org/doc/draft-ietf-jsonpath-base/) ("canonical" only, no filters, unions, recursive descenders, etc). An empty query will output the entire JSON document with the default 2 spaces per level of indent.
 
-There are no input or output options, both the query and the file arguments are also optional.
+String values are output in their native encoding (_not_ JSON double quoted), all other values are output as JSON (arrays, objects, booleans, numbers and null). If query path is not found, there is no output and ljt will exit with a status of `1`.
 
-An empty query will output the entire JSON document with the default 2 spaces per level of indent.
+There are no other input or output options.
 
-A file argument can be any valid file path. Additionally file redirection, here docs and here texts are accepted, as well as input via pipe (via cat).
+`[filepath]` can be any valid file path. Input via file redirection, here docs, here texts and Unix pipe (via cat) are all accepted.
 
-Usage: `ljt [query] [fileArg]`
 ```
+#JSON Pointer example, strings are output as text not JSON
 % ljt /obj/0 <<< '{"obj":["string",42,true]}'
 string
 
-% ljt '.obj[1]' <<< '{"obj":["string",42,true]}'
-42
-
+#JSONPath example
 % ljt '$["obj"][2]' <<< '{"obj":["string",42,true]}'
 true
 
+#JSONPath without leading $ is also allowed
+% ljt '.obj[1]' <<< '{"obj":["string",42,true]}'
+42
+
+#objects are output as JSON
 % ljt <<< '{"obj":["string",42,true]}'                                                                               
 {
   "obj": [
@@ -33,6 +35,7 @@ true
   ]
 }
 
+#arrays are output as JSON
 % ljt /obj <<< '{"obj":["string",42,true]}'
 [
   "string",
@@ -40,6 +43,18 @@ true
   true
 ]
 
+#unlike jpt there are no output options, rely on standard tools to modify output
+ % ljt /obj <<< '{"obj":["string",42,true]}' | sed -e 's/^ *//g' | tr -d $'\n'
+["string",42,true]
+
+#example of piped input
 % ljt /obj <<< '{"obj":["string",42,true]}' | ljt '/0'  
 string
 ```
+
+### Requirements:
+* macOS 10.11+ or \*nix with jsc installed
+
+### Limitations:
+* Max JSON input size is 2GB
+* Max output is 720MB
