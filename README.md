@@ -13,6 +13,8 @@ String values are output as regular text and are _not_ double quoted JSON. All o
 
 There are no other input or output options.
 
+See my blog for articles, examples, and musing on the ljt: https://www.brunerd.com/blog/category/projects/ljt/
+
 ## Examples
 ```
 #JSON Pointer example, strings are output as text not JSON
