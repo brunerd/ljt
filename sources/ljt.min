@@ -15,7 +15,7 @@ queryArg="${1}"; fileArg="${2}";jsc=$(find "/System/Library/Frameworks/JavaScrip
 )
 ## END FUNCTION ##
 
-# Usage: ljt [query] [filepath]
+# Usage: ljt [query] [filepath] 
 # [query] is optional and can be JSONPath (with or without $) or JSON Pointer
 # [filepath] is optional, input can also be via file redirection, piped input, here doc, or here strings
 
