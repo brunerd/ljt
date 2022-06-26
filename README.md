@@ -5,7 +5,7 @@
 ### Usage: 
 `ljt [query] [filepath]`
 
-`[query]` is optional and may be either [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) or [JSONPath](https://datatracker.ietf.org/doc/draft-ietf-jsonpath-base/) ("canonical" only, no filters, unions, recursive descenders, etc). An empty query will output the entire JSON document with the default 2 spaces per level of indent. `plutil`-style "keypath" notation is also resolved (unless they key names **begins** with characters that collide with JSON Pointer, JSON Path, or jq-style expressions)
+`[query]` is optional and may be either [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) or [JSONPath](https://datatracker.ietf.org/doc/draft-ietf-jsonpath-base/) ("canonical" only, no filters, unions, recursive descenders, etc). An empty query will output the entire JSON document with the default 2 spaces per level of indent. `plutil`-style "keypath" notation is also resolved (unless the key name **begins** with characters that collide with JSON Pointer, JSON Path, or jq-style expressions)
 
 `[filepath]` can be any valid file path. Input via file redirection, here docs, here texts and Unix pipe (via cat) are all accepted.
 
