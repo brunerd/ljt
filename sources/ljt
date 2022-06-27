@@ -7,7 +7,7 @@ ljt - Little JSON Tool (https://github.com/brunerd/ljt) Copyright (c) 2022 Joel 
 Licensed under the MIT License. Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 LICENSE_BLOCK
 
-#v1.0.5 - copy the function below to embed ljt into your shell script, ljt.min a minified version is also available
+#v1.0.6 - copy the function below to embed ljt into your shell script, ljt.min a minified version is also available
 function ljt () (
 	#xtrace will interfere with stderr output capture and exit non-zero (done because jsc lacks ability to exit non-zero)
 	[ -n "${-//[^x]/}" ] && set +x
@@ -20,12 +20,13 @@ function ljt () (
 		var file = decodeURIComponent(escape(arguments[1]));
 
 		//if JSON Pointer convert to bracket style JS notation
-		if (query[0]==='/'){ 
-			query = query
-			.split('/')
-			.slice(1)
-			.map(function (f){return "["+JSON.stringify(f.replace(/~1/g,"/").replace(/~0/g,"~"))+"]"})
-			.join('')
+		if (query[0]==='/' || query===""){ 
+
+			//no naked tildes ~ allowed 
+			if (/~[^0-1]/g.test(query+' ')){ throw new SyntaxError("JSON Pointer allows ~0 and ~1 only: " + query) }
+			
+			//properly split on /, reconstitute ~ and / chars, then normalize to JS bracket-style path
+			query = query.split('/').slice(1).map(function (f){return "["+JSON.stringify(f.replace(/~1/g,"/").replace(/~0/g,"~"))+"]"}).join('')
 		}
 		//if JS/JSONPath style path
 		//reverse query, toss strings, look for disallowed characters, function invocation is prohibited
@@ -78,7 +79,7 @@ EOT
 	#otherwise use cat for piped input
 	else 
 		#if file descriptor is 0 we do have no input, offer help
-		[ -t '0' ] && echo -e "ljt (v1.0.5) - Little JSON Tool (https://github.com/brunerd/ljt)\nUsage: ljt [query] [filepath]\n  [query] is optional and can be JSON Pointer, canonical JSONPath (with or without leading $), or plutil-style keypath\n  [filepath] is optional, input can also be via file redirection, piped input, here doc, or here strings" >/dev/stderr && exit 0
+		[ -t '0' ] && echo -e "ljt (v1.0.6) - Little JSON Tool (https://github.com/brunerd/ljt)\nUsage: ljt [query] [filepath]\n  [query] is optional and can be JSON Pointer, canonical JSONPath (with or without leading $), or plutil-style keypath\n  [filepath] is optional, input can also be via file redirection, piped input, here doc, or here strings" >/dev/stderr && exit 0
 		#otherwise process piped input
 		{ errOut=$( { { "${jsc}" -e "${JSCode}" -- "${queryArg}" "/dev/stdin" <<< "$(cat)"; } 1>&3 ; } 2>&1); } 3>&1; 
 	fi
