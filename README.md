@@ -5,7 +5,9 @@
 ### Usage: 
 `ljt [query] [filepath]`
 
-`[query]` is optional and may be either [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) or [JSONPath](https://datatracker.ietf.org/doc/draft-ietf-jsonpath-base/) ("canonical" only, no filters, unions, recursive descenders, etc). An empty query will output the entire JSON document with the default 2 spaces per level of indent. `plutil`-style "keypath" notation is also resolved (unless the key name **begins** with characters that collide with JSON Pointer, JSON Path, or jq-style expressions)
+`[query]` is optional and may be either [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901), [JSONPath](https://datatracker.ietf.org/doc/draft-ietf-jsonpath-base/) ("canonical" only, no filters, unions, recursive descenders, etc) or `plutil`-style "keypath" notation. An empty query will output the entire JSON document with the default of 2 spaces per level of indent. 
+
+**Note:** If a `keypath` resembles a JSON Pointer or JSONPath/jq-style expression by **beginning** with the character dollar sign ($), period(.), left square bracket ([), or solidus (/) it will **not** be resolved. It will be treated as if it were JSONPath and JSON Pointer. Standards win.
 
 `[filepath]` can be any valid file path. Input via file redirection, here docs, here texts and Unix pipe (via cat) are all accepted.
 
@@ -20,6 +22,14 @@ See my blog for articles, examples, and musing on the ljt: https://www.brunerd.c
 #JSON Pointer example, strings are output as text not JSON
 % ljt /obj/0 <<< '{"obj":["string",42,true]}'
 string
+
+#keypath example: No leading characters before propery name, both array elements and property names are period delimited
+% ljt obj.0 <<< '{"obj":["string",42,true]}'
+string
+
+#keypath example if property name contains a period
+% ljt 'first\.last' <<< '{"first.last":"Avery Specialperson"}'
+Avery Specialperson
 
 #JSONPath example
 % ljt '$["obj"][2]' <<< '{"obj":["string",42,true]}'
