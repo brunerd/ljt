@@ -27,9 +27,17 @@ string
 % ljt obj.0 <<< '{"obj":["string",42,true]}'
 string
 
-#keypath example if property name contains a period
-% ljt 'first\.last' <<< '{"first.last":"Avery Specialperson"}'
-Avery Specialperson
+#keypath example if property name contains periods escape them with \
+% ljt 'com\.keypaths\.are kinda\.wonky' <<< '{"com.keypaths.are kinda.wonky":true}'
+true
+
+#if you don't single quote you must escape your escape (leaning toothpick syndrome? :)
+% ljt "com\\.keypaths\\.are kinda\\.wonky" <<< '{"com.keypaths.are kinda.wonky":true}'
+true 
+
+#use JSON Pointer to avoid escaping periods, if you have space you still have to quote
+% ljt '/com.json pointer.is.easier' <<< '{"com.json pointer.is.easier":true}'
+true
 
 #JSONPath example
 % ljt '$["obj"][2]' <<< '{"obj":["string",42,true]}'
