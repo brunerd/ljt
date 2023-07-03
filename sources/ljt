@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-#!/usr/bin/env zsh
+#!/bin/zsh
+#!/bin/bash
 #choose your shell with the first line, works in either
 
 : <<-LICENSE_BLOCK
@@ -8,7 +8,7 @@ Licensed under the MIT License. Permission is hereby granted, free of charge, to
 LICENSE_BLOCK
 
 #BEGIN FUNCTION - copy the function below to embed ljt into your shell script, ljt.min a minified version is also available
-function ljt () ( #v1.0.9 ljt [query] [file]
+function ljt () ( #v1.0.10 ljt [query] [file]
 	#xtrace will interfere with stderr output capture and exit non-zero (done because jsc lacks ability to exit non-zero)
 	{ set +x; } &> /dev/null
 	
@@ -33,8 +33,8 @@ function ljt () ( #v1.0.9 ljt [query] [file]
 			query = query.split('/').slice(1).map(function (f){return "["+JSON.stringify(f.replace(/~1/g,"/").replace(/~0/g,"~"))+"]"}).join('')
 		}
 		//treat as JS/JSONPath style path
-		//reverse query, toss strings, look for disallowed characters, function invocation is prohibited
 		else if(query[0] === '$' || (query[0] === '.' && query[1] !== '.') || query[0] === '[' ){
+			//reverse query, toss quoted strings, look for any disallowed characters: function invocation is prohibited!
 			if(/[^A-Za-z_$\d\.\[\]'"]/.test(query.split('').reverse().join('').replace(/(["'])(.*?)\1(?!\\)/g, ""))){ 
 				throw new Error("Invalid path: " + query);
 			}		
@@ -76,14 +76,14 @@ EOT
 	queryArg="${1}"; fileArg="${2}"; 
 	#jsc changed location in 10.15, or perhaps this some other *nix
 	jsc=$(find "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/" -name 'jsc');[ -z "${jsc}" ] && jsc=$(which jsc);
-	#allow query to be optional
-	[ -f "${queryArg}" -a -z "${fileArg}" ] && fileArg="${queryArg}" && unset queryArg;
+	#allow query to be optional, if it is a file path
+	if [ -f "${queryArg}" ] && [ -z "${fileArg}" ]; then fileArg="${queryArg}"; unset queryArg; fi
 	#get input via file or file redirection, capture stderr to a variable
 	if [ -f "${fileArg:=/dev/stdin}" ]; then { errOut=$( { { "${jsc}" -e "${JSCode}" -- "${queryArg}" "${fileArg}"; } 1>&3 ; } 2>&1); } 3>&1;
 	#otherwise use cat for piped input
 	else 
 		#if file descriptor is 0 we do have no input, offer help
-		[ -t '0' ] && echo -e "ljt (v1.0.9) - Little JSON Tool (https://github.com/brunerd/ljt)\nUsage: ljt [query] [filepath]\n  [query] is optional and can be JSON Pointer, canonical JSONPath (with or without leading $), or plutil-style keypath\n  [filepath] is optional, input can also be via file redirection, piped input, here doc, or here strings" >/dev/stderr && exit 0
+		[ -t '0' ] && echo -e "ljt (v1.0.10) - Little JSON Tool (https://github.com/brunerd/ljt)\nUsage: ljt [query] [filepath]\n  [query] is optional and can be JSON Pointer, canonical JSONPath (with or without leading $), or plutil-style keypath\n  [filepath] is optional, input can also be via file redirection, piped input, here doc, or here strings" >/dev/stderr && exit 0
 		#otherwise process piped input
 		{ errOut=$( { { "${jsc}" -e "${JSCode}" -- "${queryArg}" "/dev/stdin" <<< "$(cat)"; } 1>&3 ; } 2>&1); } 3>&1; 
 	fi
